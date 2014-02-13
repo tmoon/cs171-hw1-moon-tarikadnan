@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="http://d3js.org/d3.v3.min.js"></script>
+ <script src="./d3.v3.min.js"></script>
   <style type="text/css">
     rect {
         fill: teal;
@@ -9,12 +9,15 @@
     }
     text {
         font: 10px sans-serif;
+        fill: white;
     }
   </style>
 </head>
 <body>
+  <label><input type="radio" name="order" value="state"> State</label>
+  <label><input type="radio" name="order" value="rate" checked> Rate</label>
+  <h3>Unemployment Rates for States</h3>
   <script type="text/javascript">
-
     var margin = {top: 50, bottom: 10, left:300, right: 40};
     var width = 900 - margin.left - margin.right;
     var height = 900 - margin.top - margin.bottom;
@@ -26,6 +29,7 @@
 
     var state = function(d) { return d.State; };
 
+    // append svg canvas
     var svg = d3.select("body").append("svg")
       .attr("width", width+margin.left+margin.right)
       .attr("height", height+margin.top+margin.bottom);
@@ -44,14 +48,36 @@
       var groups = g.append("g")
         .selectAll("g")
         .data(data)
-      .enter()
+        .enter()
         .append("g")
         .attr("transform", function(d, i) { return "translate(0, " + yScale(d.State) +")"; });
 
+      var color_scale = d3.scale.linear()
+                          .domain([2.0,11.0])
+                          .range(["teal","lightgrey"])
+                    
       var bars = groups
         .append("rect")
-        .attr("width", function(d) { return xScale(d.Rate); })
-        .attr("height", bar_height);
+        .attr("width", function(d) { return xScale(d.Rate)-10; })
+        .attr("height", bar_height)
+        .style("fill", function(d){return color_scale(d.Rate);});
+
+      groups.append("text")
+          .attr("text-anchor", "end")
+          .attr("x", function(d,i) { return xScale(d.Rate) -15; })
+          .attr("y", bar_height/2)
+          .attr("dy", ".35em")
+          .text(function(d, i) { return d.Rate; });
+
+      groups.append("text")
+        .attr("text-anchor", "end")
+        .attr("x", function(d) { return -5; })
+        .attr("y", bar_height/2)
+        .attr("dy", ".35em")
+        .style("fill","steelblue")
+        .text(function(d, i) { return d.State; });
+
+
 
     });
   </script>
