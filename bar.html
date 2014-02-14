@@ -18,6 +18,40 @@
   <label><input type="radio" name="order" value="rate" checked> Rate</label>
   <h3>Unemployment Rates for States</h3>
   <script type="text/javascript">
+
+    function comparator_custom(a,b,flag)
+    {
+      var first, second;
+      a = [a.State, a.Rate];
+      b = [b.State, b.Rate]
+
+      if (flag == 0)
+      {
+        first = 0;
+        second = 1;
+      }
+      else if (flag == 1)
+      {
+        first = 1;
+        second = 0;
+      }
+
+      if (a[first] > b[first])
+        return 1;
+      if (a[first] == b[first])
+      {
+        if (a[second] > b[second])
+          return 1;
+        if (a[second] == b[second])
+          return 0;
+        else
+          return -1;
+      }
+      else
+        return -1;
+    }
+
+
     var margin = {top: 50, bottom: 10, left:300, right: 40};
     var width = 900 - margin.left - margin.right;
     var height = 900 - margin.top - margin.bottom;
@@ -27,7 +61,8 @@
 
     var bar_height = 15;
 
-    var state = function(d) { return d.State; };
+    // var state = function(d) { return d.State; };
+    var incr = function(d,i){return i;}
 
     // append svg canvas
     var svg = d3.select("body").append("svg")
@@ -43,19 +78,19 @@
       var min = 0;
 
       xScale.domain([min, max]);
-      yScale.domain(data.map(state));
-
+      // yScale.domain(data.map(state));
+      yScale.domain(data.map(incr));
+      var dict = {};
       var groups = g.append("g")
         .selectAll("g")
         .data(data)
         .enter()
         .append("g")
-        .attr("transform", function(d, i) { return "translate(0, " + yScale(d.State) +")"; });
+        .attr("transform", function(d, i) { dict[d.State] = yScale(i); return "translate(0, " + dict[d.State] +")"; });
 
       var color_scale = d3.scale.linear()
-                          .domain([2.0,11.0])
-                          .range(["teal","lightgrey"])
-                    
+                          .domain([2.6,9.0])
+                          .range(["orangered", "silver"]);
       var bars = groups
         .append("rect")
         .attr("width", function(d) { return xScale(d.Rate)-10; })
@@ -76,6 +111,38 @@
         .attr("dy", ".35em")
         .style("fill","steelblue")
         .text(function(d, i) { return d.State; });
+
+      d3.selectAll("input").on("click", function(d,i){reorder(i)});
+
+      var clicks = [0,1],
+          res = 0,
+          newPlace = {};
+
+      // console.log(dict);
+
+      function reorder(i){
+          if (clicks[i] == 0){
+            clicks[i] = 1;
+            data = data.sort(function(a,b){return comparator_custom(a,b, i); });
+            clicks[ (i + 1) % 2] = 0;
+          }
+          else{
+              data = data.reverse();
+              clicks[ (i + 1) % 2] = 0;
+          }
+
+          for (i in data){
+            newPlace[data[i].State] = yScale(i);
+            // console.log(yScale(data[i].State));
+          }
+
+          groups
+           .transition()
+           .duration(750)
+           .delay(function(d, i) { return i * 10; })
+           .attr("transform", function(d, i) { res = newPlace[d.State]; dict[d.State] = res;  return "translate(0,"+ res +" )"; }) 
+
+      }
 
 
 

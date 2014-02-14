@@ -11,51 +11,155 @@
 <body>
   <script src="./d3.v3.min.js"></script>
   <script>
-  function makestar(num)
-  {
-            var s = "";
-            for (var i=0;i<parseInt(num);i++)
-              s += "*";
-            return num, s;
-  }
-  d3.tsv("unemp_states_us_nov_2013.tsv", function(error, data){
 
-      var table = d3.select("body").append("table"),
-      tbody = table.append("tbody");
+  d3.text("unemp_states_us_nov_2013.tsv", function(datasetText) {
+    // parse the tsv raw text
+    var parsed = d3.tsv.parseRows(datasetText);
+
+    // put a new column data filed for the chart column
+    for (var i in parsed)
+    {
+      parsed[i].push(parsed[i][2]);
+    }
+    parsed[0][3] = "Chart";
+
+    var body = d3.select("body");
+        body.append("h1").text("Local Area Unemployment Statistics");
+    var table = body.append("table")
+            .style("margin-left", "100px")
+            .style("border-collapse", "collapse")
+            .style("border", "2px black solid"),
+        thead = table.append("thead"),
+        tbody = table.append("tbody"),
+        caption = table.append("caption");
+
+  
+
+    caption.text("Unemployment rates for states");
+    // append the header row
+    thead.append("tr")
+        .append("th")
+        .attr("colspan","4")
+        .style("border", "1px black solid")
+        .style("padding", "5px")
+        .html(" <b> Unemployment Rates for States  <br></br>  Monthly Rankings  <br></br>  Seasonally Adjusted <br></br>  Dec. 2013  <sup>p</sup> </b>");
+
+    thead.append("tr")
+        .selectAll("th")
+        .data(parsed[0])
+        .enter()
+        .append("th")
+        .style("border", "1px black solid")
+        .style("padding", "5px")
+        .text(function(column) { return column; });
+
 
       var rows = tbody.selectAll("tr")
-      .data(data)
-      .enter()
-      .append("tr");
+        .data(parsed.slice(1))
+        .enter()
+        .append("tr");
 
-      var cells = rows.selectAll("td")
-      .data(function(row) {
-        return d3.range(Object.keys(row).length).map(function(column, i) {
-          return row[Object.keys(row)[i]];
-          });
-        })
-      .enter()
-      .append("td")
-      .text(function(d){
-        return d;
-      // .text(function(d,i){ 
-      //   if(i % 3 ==2)
-      //   {
-      //     return makestar(d);
-      //   }
-      //   else
-      //     return d; 
+    // create a cell in each row for each column
+    var cells = rows.selectAll("td")
+        .data(function(d){return d})
+        .enter()
+        .append("td")
+        .style("border", "1px black solid")
+        .style("padding", "5px")
+        // .attr("style", "font-family: Courier")
+        .html(function(d,i) { 
+          if (i == 3){
+            return "<svg width=95 height=12> <rect width="+parseFloat(d) * 10.0+"></rect> </svg>";
+          }
+          else
+            return d; 
         });
+
+    var allrows = tbody.selectAll("tr");
+
+    var bars = tbody.selectAll("rect")
+      .attr("height","12")
+      .style("fill","steelblue");
+
+    allrows
+      .style("background-color", function(d,i){
+        if (i % 2 == 0)
+          return "lightgrey";
       });
 
-    tbody.selectAll("tr")
-    .data([1,2,3,4])
-    .enter()
-    .append("td")
-    .text(function(d){
-      return d;
-    });
+    // var color_scale = d3.scale.linear()
+    //                     .domain([2.0,11.0])
+    //                     .range(["darkorange","lightgrey"]);
 
+    var color_scale = d3.scale.linear()
+      .domain([0, tbody.selectAll("tr")[0].length-1])
+      .interpolate(d3.interpolateRgb)
+      .range(["orangered", "silver"])
+    
+    var allcells = allrows.selectAll("td");
+    // console.log( tbody.selectAll("tr")[0].length-1);
+
+    var num = 0;
+    allcells
+      .style("background-color", function(d,i){
+        if (i == 2){
+          num++;
+          return color_scale(parseFloat(num));
+        }
+
+      });
+
+
+    allcells
+      .on('mouseover',function(d,ind){
+
+      if (ind!=2){
+        var num_col = 0;
+        allcells.filter(function(d,i){return i == ind;})
+          .style("background-color","#F4FA58");
+      }
+       })
+      .on('mouseout',function(d,ind){
+        var parity = 0;
+
+        allcells.filter(function(d,i){return (i == ind) & (i !=2);})
+          .style("background-color", function(d,i){
+            if (parity == 0)
+            {
+              parity = 1;
+              return "lightgrey";
+            }
+            else
+            {
+              parity = 0;
+              return "white";
+            }
+
+          });
+
+        });
+
+      allrows
+        .on('mouseover',function(d){
+          d3.select(this)
+            .selectAll('td')
+            .filter(function(d,i){return i !=2;})
+            .style("background-color","#F4FA58");
+         })
+        .on('mouseout',function(d,i){
+          if (i % 2 == 0)
+            d3.select(this)
+              .selectAll('td')
+              .filter(function(d,i){return i !=2;})
+              .style("background-color","lightgrey");
+          else
+            d3.select(this)
+              .selectAll('td')
+              .filter(function(d,i){return i !=2;})
+              .style("background-color","white");
+        });
+
+  });
   </script>
 </body>
 </html>
