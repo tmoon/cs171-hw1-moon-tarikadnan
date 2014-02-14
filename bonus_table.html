@@ -208,9 +208,16 @@
         }
         else{
             parsed = parsed.reverse();
+            clicks[i-2] == 0;
             clicks[ (i-1) % 2] = 0;
         }
-        make_table(); 
+        make_table();
+
+        if (clicks[(i-2)] === 0)
+          d3.select(this).text(head_row[i]+" ▲");
+        else
+          d3.select(this).text(head_row[i]+" ▼");
+        console.log(clicks[i-2]);
       }
     });
   });

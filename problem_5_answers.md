@@ -1,0 +1,3 @@
+1. This are just bars and we have no idea what they represent. The missing elements are the heading, the name of the states, the rate etc. As a result this bar chart is not usable.
+2. These are mostly canvases for putting svg elements. The first one is for contating all the elements. The second one contains all the individual canvas for the bars. The third one contains the physical bar, the name of the stte and the rate.
+3. If we add text before rect then the rect will be inside the text. So it won't be considered as an html and won't be work properly.
