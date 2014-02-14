@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>CS171 Homework 1</title>
+
+  <style type="text/css">
+  /* YOUR CSS */
+  </style>
+</head>
+<body>
+  <script src="./d3.v3.min.js"></script>
+  <script>
+    function makestar(num)
+  {
+            var s = "";
+            for (var i=0;i<parseInt(num);i++)
+              s += "*";
+            return s;
+  }
+
+  d3.tsv("unemp_states_us_nov_2013.tsv", function(error, data){
+
+    columns = ["Rank","State","Rate", "Bar"]
+    
+    var table = d3.select("body").append("table")
+            .attr("style", "margin-left: 250px"),
+        thead = table.append("thead"),
+        tbody = table.append("tbody");
+
+    // append the header row
+    thead.append("tr")
+        .selectAll("th")
+        .data(columns)
+        .enter()
+        .append("th")
+            .text(function(column) { return column; });
+
+    // create a row for each object in the data
+    var rows = tbody.selectAll("tr")
+        .data(data)
+        .enter()
+        .append("tr");
+
+    // create a cell in each row for each column
+    var cells = rows.selectAll("td")
+        .data(function(row) {
+            return columns.map(function(column, i) {
+                // console.log(i);
+                if (i == 3)
+                  return {column: column, value: row[columns[2]]};
+                else
+                  return {column: column, value: row[column]};
+            });
+        })
+        .enter()
+        .append("td")
+        // .attr("style", "font-family: Courier")
+        .html(function(d,i) { 
+          if (i == 3){
+            return "<svg width=71 height=12> <rect height=12 width="+parseFloat(d.value) * 10.0+"></rect> </svg>";
+          }
+          else
+            return d.value; });
+
+
+    tbody
+      .selectAll("tr")
+      .selectAll("td")
+
+    //   .data(function(row) {
+    //         return columns.map(function(column, i) {
+    //             // console.log(i);
+    //             if (i == 3)
+    //               return {column: column, value: row[columns[2]]};
+    //             else
+    //               return {column: column, value: row[column]};
+    //         });
+    //     })
+    //     .enter()
+    //     .append("td")
+    //     // .attr("style", "font-family: Courier")
+    //     .html(function(d,i) { 
+    //       if (i == 3){
+    //         return makestar(d.value);
+    //       }
+    //       else
+    //         return d.value; });
+    //     });
+
+        })
+        // .attr("width", function(d,i){
+        // if (i == 3)
+        //   console.log(i);        
+        // })
+        // .select("svg")
+        // .select("rect")
+        // .attr("width", function(d,i){
+        //   if (i == 3)
+        //     console.log(i);
+        // });
+
+
+  </script>
+</body>
+</html>

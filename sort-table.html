@@ -5,36 +5,77 @@
   <title>CS171 Homework 1</title>
 
   <style type="text/css">
-  /* YOUR CSS */
+  body {
+    text-align: center;
+  }
+  table
+  { 
+    margin-left: auto;
+    margin-right: auto;
+  }
   </style>
 </head>
 <body>
   <script src="./d3.v3.min.js"></script>
   <script>
 
-  d3.text("unemp_states_us_nov_2013.tsv", function(datasetText) {
-    // parse the tsv raw text
-    var parsed = d3.tsv.parseRows(datasetText);
-
-    // put a new column data filed for the chart column
-    for (var i in parsed)
+  // custom comparator function that resolves any conflict
+  // when two rates are equal
+  function comparator_custom(a,b,flag)
     {
-      parsed[i].push(parsed[i][2]);
-    }
-    parsed[0][3] = "Chart";
+      var first, second;
+      if (flag == 0)
+      {
+        first = 1;
+        second = 2;
+      }
+      else if (flag == 1)
+      {
+        first = 2;
+        second = 1;
+      }
 
+      if (a[first] > b[first])
+        return 1;
+      if (a[first] == b[first])
+      {
+        if (a[second] > b[second])
+          return 1;
+        if (a[second] == b[second])
+          return 0;
+        else
+          return -1;
+      }
+      else
+        return -1;
+    }
+
+  d3.text("unemp_states_us_nov_2013.tsv", function(datasetText) {
+    //parse the data
+    var parsed_unsorted = d3.tsv.parseRows(datasetText);
+
+    // process data
+    for (var i in parsed_unsorted)
+    {
+      parsed_unsorted[i].push(parsed_unsorted[i][2]);
+    }
+    parsed_unsorted[0][3] = "Chart";
+
+    var head_row = parsed_unsorted[0];
+    var parsed = parsed_unsorted.slice(1);
+    
+    // selector for different parts
     var body = d3.select("body");
         body.append("h1").text("Local Area Unemployment Statistics");
     var table = body.append("table")
-            .style("margin-left", "100px")
             .style("border-collapse", "collapse")
             .style("border", "2px black solid"),
         thead = table.append("thead"),
         tbody = table.append("tbody"),
         caption = table.append("caption");
 
-  
-
+    
+    // change caption text and formatting
     caption.text("Unemployment rates for states");
     // append the header row
     thead.append("tr")
@@ -44,9 +85,10 @@
         .style("padding", "5px")
         .html(" <b> Unemployment Rates for States  <br></br>  Monthly Rankings  <br></br>  Seasonally Adjusted <br></br>  Dec. 2013  <sup>p</sup> </b>");
 
-    thead.append("tr")
+    //  rest of the table head
+    var head = thead.append("tr")
         .selectAll("th")
-        .data(parsed[0])
+        .data(head_row)
         .enter()
         .append("th")
         .style("border", "1px black solid")
@@ -54,8 +96,12 @@
         .text(function(column) { return column; });
 
 
-      var rows = tbody.selectAll("tr")
-        .data(parsed.slice(1))
+  // this function makes the tables given the data array
+  function make_table()
+  {
+    d3.select("tbody").selectAll("tr").remove();
+    var rows = tbody.selectAll("tr")
+        .data(parsed)
         .enter()
         .append("tr");
 
@@ -66,16 +112,15 @@
         .append("td")
         .style("border", "1px black solid")
         .style("padding", "5px")
-        // .attr("style", "font-family: Courier")
         .html(function(d,i) { 
           if (i == 3){
             return "<svg width=95 height=12> <rect width="+parseFloat(d) * 10.0+"></rect> </svg>";
           }
           else
-            return d; 
-        });
+            return d; });
 
     var allrows = tbody.selectAll("tr");
+    var allcells = allrows.selectAll("td");
 
     var bars = tbody.selectAll("rect")
       .attr("height","12")
@@ -87,36 +132,24 @@
           return "lightgrey";
       });
 
-    // var color_scale = d3.scale.linear()
-    //                     .domain([2.0,11.0])
-    //                     .range(["darkorange","lightgrey"]);
-
     var color_scale = d3.scale.linear()
-      .domain([0, tbody.selectAll("tr")[0].length-1])
-      .interpolate(d3.interpolateRgb)
-      .range(["orangered", "silver"])
-    
-    var allcells = allrows.selectAll("td");
-    // console.log( tbody.selectAll("tr")[0].length-1);
+                        .domain([2.6,9.0]) // min and max values in the chart
+                        .range(["orangered", "silver"]);
 
-    var num = 0;
     allcells
       .style("background-color", function(d,i){
-        if (i == 2){
-          num++;
-          return color_scale(parseFloat(num));
-        }
-
+        if (i == 2)
+          return color_scale(parseFloat(d));
       });
 
-
+    // color whole column yellow
     allcells
       .on('mouseover',function(d,ind){
 
       if (ind!=2){
         var num_col = 0;
         allcells.filter(function(d,i){return i == ind;})
-          .style("background-color","#F4FA58");
+          .style("background-color","#DFEB6F");
       }
        })
       .on('mouseout',function(d,ind){
@@ -134,17 +167,18 @@
               parity = 0;
               return "white";
             }
-
           });
 
         });
 
+
+      // color whole row yellow
       allrows
         .on('mouseover',function(d){
           d3.select(this)
             .selectAll('td')
             .filter(function(d,i){return i !=2;})
-            .style("background-color","#F4FA58");
+            .style("background-color","#DFEB6F");
          })
         .on('mouseout',function(d,i){
           if (i % 2 == 0)
@@ -159,15 +193,26 @@
               .style("background-color","white");
         });
 
-              // question 4(2)
-      var color = d3.scale.linear()
-          .domain([0, tbody.selectAll("tr")[0].length-1])
-          .interpolate(d3.interpolateRgb)
-          .range(["orangered", "silver"])
-      console.log(color(0));
-      console.log(color(10));
-      console.log(color(150));
+    }
+  make_table();
 
+  // keeps track of the parity of clicks, i.e. if the list is sorted
+  var clicks = [0,1];
+
+  head.on("click", function(d,i){
+      if (i == 1 || i == 2){
+        if (clicks[i-1] == 0){
+          clicks[i-1] = 1;
+          parsed = parsed_unsorted.slice(1).sort(function(a,b){return comparator_custom(a,b, i-1); });
+          clicks[ i % 2] = 0;
+        }
+        else{
+            parsed = parsed.reverse();
+            clicks[ i % 2] = 0;
+        }
+        make_table(); 
+      }
+    });
   });
   </script>
 </body>

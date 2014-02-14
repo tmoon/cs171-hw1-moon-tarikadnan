@@ -1,1 +1,3 @@
 1. This means this select arr the row elements in the table body and returns the length of that array - 1 (i.e. the number of rows/states) in the list -1.
+2. The functions returned "#ff4500", "#f25e26", "#42ffff". These are hex values for colors (similar to) orangered, light-orange, and sky color. The last one is sky because the input 150 is outside the domain of the given color range.
+3. Then the scale would map values from 2.6 to 9.0 the given color range space. This is in fact, really useful when we are trying to color the cells based on the value of the cell (i.e. the unemployment rate here).

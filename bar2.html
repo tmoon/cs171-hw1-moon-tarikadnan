@@ -15,7 +15,8 @@
 </head>
 <body>
   <label><input type="radio" name="order" value="state"> State</label>
-  <label><input type="radio" name="order" value="rate" checked> Rate</label>
+  <label><input type="radio" name="order" value="rate" checked> Rate</label> <br />
+  0 <input type="range" name="points" min="0" max="50" step="1" value="50"> 50
   <h3>Unemployment Rates for States</h3>
   <script type="text/javascript">
 
@@ -118,6 +119,7 @@
           newPlace = {};
 
       function reorder(i){
+        if (i ==0 || i == 1){
           if (clicks[i] == 0){
             clicks[i] = 1;
             data = data.sort(function(a,b){return comparator_custom(a,b, i); });
@@ -138,7 +140,14 @@
            .duration(750)
            .delay(function(d, i) { return i * 10; })
            .attr("transform", function(d, i) { res = newPlace[d.State]; return "translate(0,"+ res +" )"; }) 
-
+        }
+        else{
+            groups
+           // .transition()
+           // .duration(750)
+           // .delay(function(d, i) { return i * 5; })
+           // .attr("transform", function(d, i) { res = newPlace[d.State]; return "translate(0,"+ res +" )"; }) 
+        }
       }
     });
   </script>
