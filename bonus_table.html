@@ -26,13 +26,13 @@
       var first, second;
       if (flag == 0)
       {
-        first = 2;
-        second = 3;
+        first = 1;
+        second = 2;
       }
       else if (flag == 1)
       {
-        first = 3;
-        second = 2;
+        first = 2;
+        second = 1;
       }
 
       if (a[first] > b[first])
@@ -55,14 +55,16 @@
     var parsed_unsorted = d3.tsv.parseRows(datasetText);
 
     // process data
-    for (var i in parsed_unsorted)
-    {
-      parsed_unsorted[i] = [parsed_unsorted[i][2]].concat(parsed_unsorted[i]);
-    }
-    parsed_unsorted[0][0] = "Chart";
+    // for (var i in parsed_unsorted)
+    // {
+    //   parsed_unsorted[i].push(parsed_unsorted[i][2]);
+    // }
+    // parsed_unsorted[0][3] = "Chart";
 
     var head_row = parsed_unsorted[0];
-    var parsed = parsed_unsorted.slice(1);
+        head_row = ["Chart"].concat(head_row);
+    // to make sure tables are sorted at the beginning
+    var parsed = parsed_unsorted.slice(1).sort(function(a,b){return comparator_custom(a,b, 1); });
     
     // selector for different parts
     var body = d3.select("body");
@@ -110,21 +112,22 @@
         .data(function(d){return d})
         .enter()
         .append("td")
+        .html(function(d) {return d; });
+  // insert the bars
+    rows.insert("td", ":first-child").append("svg")
+       .attr("width", 95)
+       .attr("height", 12)
+       .append("rect")
+       .attr('fill','steelblue')
+       .attr("height", 12)
+       .attr("width", function(d) { return parseFloat(d[2]) * 10; });
+    
+    var allrows = tbody.selectAll("tr");
+    var allcells = allrows.selectAll("td"); 
+
+    allcells
         .style("border", "1px black solid")
         .style("padding", "5px")
-        .html(function(d,i) { 
-          if (i == 0){
-            return "<svg width=95 height=12> <rect width="+parseFloat(d) * 10.0+"></rect> </svg>";
-          }
-          else
-            return d; });
-
-    var allrows = tbody.selectAll("tr");
-    var allcells = allrows.selectAll("td");
-
-    var bars = tbody.selectAll("rect")
-      .attr("height","12")
-      .style("fill","steelblue");
 
     allrows
       .style("background-color", function(d,i){
@@ -197,27 +200,37 @@
   make_table();
 
   // keeps track of the parity of clicks, i.e. if the list is sorted
-  var clicks = [0,1];
+  var clicks = [-1,1];
 
   head.on("click", function(d,i){
-      if (i == 2 || i == 3){
-        if (clicks[i-2] == 0){
-          clicks[i-2] = 1;
-          parsed = parsed_unsorted.slice(1).sort(function(a,b){return comparator_custom(a,b, i-2); });
-          clicks[ (i-1) % 2] = 0;
+    var oldi = i;
+      if (i !=1 ){
+        if (i==3 || i ==0)
+          i = 1; // because 3rd and 4th column has the same functionality 
+        else if (i==2)
+          i = 0;
+
+        var i2 = (i + 1) %2 ;
+        
+        if (clicks[i] == -1){
+          clicks[i] = 1;
+          parsed = parsed_unsorted.slice(1).sort(function(a,b){return comparator_custom(a,b, i); });
+          clicks[i2] = -1;
         }
         else{
             parsed = parsed.reverse();
-            clicks[i-2] == 0;
-            clicks[ (i-1) % 2] = 0;
+            clicks[i2] = (clicks[i2] + 1) %2;
         }
-        make_table();
+        make_table(); 
 
-        if (clicks[(i-2)] === 0)
-          d3.select(this).text(head_row[i]+" ▲");
-        else
-          d3.select(this).text(head_row[i]+" ▼");
-        console.log(clicks[i-2]);
+        // head.
+
+        if (clicks[i] === 0)
+          d3.select(this).text(head_row[oldi]+" ▲");
+        else if (clicks[i] == 1)
+          d3.select(this).text(head_row[oldi]+" ▼");
+        console.log(clicks[0]);
+        console.log(clicks[1]);
       }
     });
   });
