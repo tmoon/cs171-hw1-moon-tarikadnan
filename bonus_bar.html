@@ -127,8 +127,9 @@
               .transition()
               .duration(750)
               .delay(function(d, i) { return i * 10; })
-              .attr("transform", "translate(0,900)") 
+              .attr("transform", "translate(0,900)")
               .remove();
+
       }
 
       function addBars(k, numBars){
@@ -136,9 +137,9 @@
       var bar_add = g.select("g")
         // .append("g", function(d,i){return (i < k & i > numBars)})
         .selectAll("g")
-        .data(data)
+        .data(data.slice(0,k+1))
         .enter()
-        .append("g", function(d,i){return (i < k & i > numBars)})
+        .append("g")
         .attr("transform", "translate(0, 900)");
 
       var rects = bar_add
@@ -166,11 +167,11 @@
       bar_add
               .transition()
               .duration(750)
-              .delay(function(d, i) { return (i- k) * 10; })
+              .delay(function(d, i) { return (i- numBars) * 10; })
               .attr("transform",  function(d, i) {return "translate(0, " +yScale(i) +")"; }); 
 
       rects.transition()
-              .delay(function(d, i) { return (i- k) * 10 + 750; })
+              .delay(function(d, i) { return (i- numBars) * 10 + 750; })
               .style("fill", function(d){return color_scale(d.Rate);});
       }
 
@@ -199,12 +200,14 @@
         }
         else{
             k = parseInt(inp.value);
-            console.log(k);
-            if (k < numBars)
+            if (k < numBars){
               removeBars(k);
+            }
+
             else if (k > numBars)
               addBars(k, numBars);   
-            numBars = k;    
+            numBars = k;   
+            console.log(numBars) ;
             }
         }
       });

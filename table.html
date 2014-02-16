@@ -208,10 +208,8 @@
           i = 1; // because 3rd and 4th column has the same functionality 
         else if (i==1)
           i = 0;
-        if ((i-1) == -1)
-          i2 = 1;
-        else
-          i2 = 0;
+        var i2 = (i+1) %2;
+
         if (clicks[i] == 0){
           clicks[i] = 1;
           parsed = parsed_unsorted.slice(1).sort(function(a,b){return comparator_custom(a,b, i); });
@@ -223,8 +221,6 @@
         }
         make_table(); 
 
-        console.log(clicks[0]);
-        console.log(clicks[1]);
       }
     });
   });

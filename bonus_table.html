@@ -95,12 +95,12 @@
         .append("th")
         .style("border", "1px black solid")
         .style("padding", "5px")
-        .text(function(column) { return column; });
 
 
   // this function makes the tables given the data array
   function make_table()
   {
+    head.text(function(column) { return column; });
     d3.select("tbody").selectAll("tr").remove();
     var rows = tbody.selectAll("tr")
         .data(parsed)
@@ -219,16 +219,17 @@
         }
         else{
             parsed = parsed.reverse();
-            clicks[i2] = (clicks[i2] + 1) %2;
+            clicks[i] = (clicks[i] + 1) %2;
+            clicks[i2] = -1;
         }
         make_table(); 
 
-        // head.
 
         if (clicks[i] === 0)
           d3.select(this).text(head_row[oldi]+" ▲");
         else if (clicks[i] == 1)
           d3.select(this).text(head_row[oldi]+" ▼");
+
         console.log(clicks[0]);
         console.log(clicks[1]);
       }
